@@ -24,3 +24,33 @@ export async function createTicket(
 
   return ticket;
 }
+
+
+type TicketFilters = {
+  status?: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+  priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  assigneeId?: string;
+};
+
+export async function getTickets(filter?: TicketFilters) {
+  const where: Prisma.TicketWhereInput = {};
+
+  if (filter?.status) {
+    where.status = filter.status;
+  }
+
+  if (filter?.priority) {
+    where.priority = filter.priority;
+  }
+
+  if (filter?.assigneeId) {
+    where.assigneeId = filter.assigneeId;
+  }
+
+  return prisma.ticket.findMany({
+    where,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}

@@ -1,5 +1,8 @@
 import { GraphQLError } from "graphql";
-import { createTicket } from "../../services/ticket/ticketService";
+import {
+  createTicket,
+  getTickets,
+} from "../../services/ticket/ticketService";
 import { Context } from "../../context";
 
 type CreateTicketArgs = {
@@ -10,7 +13,33 @@ type CreateTicketArgs = {
   };
 };
 
+type TicketFilterArgs = {
+  filter?: {
+    status?: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+    priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+    assigneeId?: string;
+  };
+};
+
 export const ticketResolver = {
+  Query: {
+    tickets: async (
+      _: unknown,
+      args: TicketFilterArgs,
+      context: Context
+    ) => {
+      if (!context.user) {
+        throw new GraphQLError("Authentication required", {
+          extensions: {
+            code: "UNAUTHORIZED",
+          },
+        });
+      }
+
+      return getTickets(args.filter);
+    },
+  },
+
   Mutation: {
     createTicket: async (
       _: unknown,
