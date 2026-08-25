@@ -5,3 +5,77 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Role {
+  REPORTER
+  AGENT
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime  @default(now())
+
+  reportedTickets Ticket[] @relation("ReporterTickets")
+  assignedTickets Ticket[] @relation("AssigneeTickets")
+  comments        Comment[]
+}
+
+model Ticket {
+  id              String       @id @default(cuid())
+  title           String
+  description     String
+  priority        Priority
+  status          TicketStatus @default(OPEN)
+
+  reporterId      String
+  assigneeId      String?
+
+  createdAt       DateTime @default(now())
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+
+  reporter User @relation("ReporterTickets", fields: [reporterId], references: [id])
+  assignee User? @relation("AssigneeTickets", fields: [assigneeId], references: [id])
+
+  comments Comment[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([assigneeId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id])
+}
+
+model Holiday {
+  id   String   @id @default(cuid())
+  date DateTime @unique
+  name String
+}
