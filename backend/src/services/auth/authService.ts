@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
 
-import { registerSchema, RegisterInput } from "../../validation/auth";
+import {
+  registerSchema,
+  RegisterInput,
+} from "../../validation/authValidation";
 import { generateToken } from "../../utils/jwt";
 
 const prisma = new PrismaClient();
@@ -26,7 +29,7 @@ export async function registerUser(input: RegisterInput) {
       name: data.name,
       email: data.email,
       passwordHash,
-      role: data.role,
+      role: data.role as Role,
     },
   });
 
