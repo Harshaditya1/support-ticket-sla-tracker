@@ -1,4 +1,4 @@
-import { PrismaClient, TicketStatus } from "@prisma/client";
+import { Prisma, PrismaClient, TicketStatus } from "@prisma/client";
 import {
   createTicketSchema,
   CreateTicketInput,
@@ -62,4 +62,31 @@ export async function getTicketById(id: string) {
   });
 
   return ticket;
+}
+export async function assignTicket(
+  ticketId: string,
+  assigneeId: string
+) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+  });
+
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  const assignee = await prisma.user.findUnique({
+    where: { id: assigneeId },
+  });
+
+  if (!assignee) {
+    throw new Error("User not found");
+  }
+
+  return prisma.ticket.update({
+    where: { id: ticketId },
+    data: {
+      assigneeId,
+    },
+  });
 }
