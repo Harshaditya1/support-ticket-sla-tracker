@@ -1,0 +1,11 @@
+#import "./ticket.graphql"
+#import "./comment.graphql"
+#import "./holiday.graphql"
+
+type Query {
+  health: String!
+}
+
+type Mutation {
+  _empty: String
+}
