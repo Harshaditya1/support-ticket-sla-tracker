@@ -54,3 +54,12 @@ export async function getTickets(filter?: TicketFilters) {
     },
   });
 }
+export async function getTicketById(id: string) {
+  const ticket = await prisma.ticket.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  return ticket;
+}

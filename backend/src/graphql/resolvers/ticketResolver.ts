@@ -2,6 +2,7 @@ import { GraphQLError } from "graphql";
 import {
   createTicket,
   getTickets,
+  getTicketById,
 } from "../../services/ticket/ticketService";
 import { Context } from "../../context";
 
@@ -20,25 +21,54 @@ type TicketFilterArgs = {
     assigneeId?: string;
   };
 };
+type TicketArgs = {
+  id: string;
+};
 
 export const ticketResolver = {
-  Query: {
-    tickets: async (
-      _: unknown,
-      args: TicketFilterArgs,
-      context: Context
-    ) => {
-      if (!context.user) {
-        throw new GraphQLError("Authentication required", {
-          extensions: {
-            code: "UNAUTHORIZED",
-          },
-        });
-      }
+ Query: {
+  tickets: async (
+    _: unknown,
+    args: TicketFilterArgs,
+    context: Context
+  ) => {
+    if (!context.user) {
+      throw new GraphQLError("Authentication required", {
+        extensions: {
+          code: "UNAUTHORIZED",
+        },
+      });
+    }
 
-      return getTickets(args.filter);
-    },
+    return getTickets(args.filter);
   },
+
+  ticket: async (
+    _: unknown,
+    args: TicketArgs,
+    context: Context
+  ) => {
+    if (!context.user) {
+      throw new GraphQLError("Authentication required", {
+        extensions: {
+          code: "UNAUTHORIZED",
+        },
+      });
+    }
+
+    const ticket = await getTicketById(args.id);
+
+    if (!ticket) {
+      throw new GraphQLError("Ticket not found", {
+        extensions: {
+          code: "TICKET_NOT_FOUND",
+        },
+      });
+    }
+
+    return ticket;
+  },
+},
 
   Mutation: {
     createTicket: async (
