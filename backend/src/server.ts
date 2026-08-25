@@ -5,10 +5,7 @@ import { loadFilesSync } from "@graphql-tools/load-files";
 import { join } from "node:path";
 
 const typeDefs = loadFilesSync(
-  join(process.cwd(), "src/graphql/schema"),
-  {
-    extensions: ["graphql"],
-  }
+  join(process.cwd(), "src/graphql/schema/**/*.graphql")
 );
 
 const yoga = createYoga({
