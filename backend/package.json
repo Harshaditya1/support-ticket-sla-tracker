@@ -7,7 +7,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/bun": "latest",
     "@types/jsonwebtoken": "^9.0.10",
-    "prisma": "^7.9.1",
+    "prisma": "6.16.2",
     "vitest": "^4.1.11"
   },
   "peerDependencies": {
@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "@graphql-tools/load-files": "^7.0.1",
-    "@prisma/client": "^7.9.1",
+    "@prisma/client": "6.16.2",
     "bcrypt": "^6.0.0",
+    "date-fns": "^4.4.0",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^17.4.2",
     "graphql": "^17.0.2",
     "graphql-yoga": "^5.22.0",
