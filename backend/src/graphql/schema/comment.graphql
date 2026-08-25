@@ -1,0 +1,20 @@
+type Comment {
+  id: ID!
+  ticketId: ID!
+  authorId: ID!
+  content: String!
+  createdAt: String!
+}
+
+input AddCommentInput {
+  ticketId: ID!
+  content: String!
+}
+
+extend type Ticket {
+  comments: [Comment!]!
+}
+
+extend type Mutation {
+  addComment(input: AddCommentInput!): Comment!
+}
