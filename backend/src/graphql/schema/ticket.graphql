@@ -1,0 +1,52 @@
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+type Ticket {
+  id: ID!
+  title: String!
+  description: String!
+  priority: Priority!
+  status: TicketStatus!
+
+  reporterId: ID!
+  assigneeId: ID
+
+  createdAt: String!
+  firstResponseAt: String
+  resolvedAt: String
+}
+
+input CreateTicketInput {
+  title: String!
+  description: String!
+  priority: Priority!
+}
+
+input TicketFilterInput {
+  status: TicketStatus
+  priority: Priority
+  assigneeId: ID
+  slaState: String
+  take: Int
+  cursor: ID
+}
+
+extend type Query {
+  tickets(filter: TicketFilterInput): [Ticket!]!
+  ticket(id: ID!): Ticket
+}
+
+extend type Mutation {
+  createTicket(input: CreateTicketInput!): Ticket!
+}
