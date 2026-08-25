@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, TicketStatus } from "@prisma/client";
+import { PrismaClient, TicketStatus, Prisma } from "@prisma/client";
 import {
   createTicketSchema,
   CreateTicketInput,
@@ -87,6 +87,38 @@ export async function assignTicket(
     where: { id: ticketId },
     data: {
       assigneeId,
+    },
+  });
+}
+export async function changeTicketStatus(
+  ticketId: string,
+  status: TicketStatus
+) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+  });
+
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  const validTransitions: Record<TicketStatus, TicketStatus[]> = {
+    OPEN: [TicketStatus.IN_PROGRESS],
+    IN_PROGRESS: [TicketStatus.RESOLVED],
+    RESOLVED: [TicketStatus.CLOSED],
+    CLOSED: [],
+  };
+
+  const allowedStatuses = validTransitions[ticket.status];
+
+  if (!allowedStatuses.includes(status)) {
+    throw new Error("Invalid status transition");
+  }
+
+  return prisma.ticket.update({
+    where: { id: ticketId },
+    data: {
+      status,
     },
   });
 }
