@@ -4,6 +4,7 @@ import { createSchema } from "graphql-yoga";
 import { loadFilesSync } from "@graphql-tools/load-files";
 import { join } from "node:path";
 import { authResolver } from "./graphql/resolvers/authResolver";
+import { createContext } from "./context";
 const typeDefs = loadFilesSync(
   join(process.cwd(), "src/graphql/schema/**/*.graphql")
 );
@@ -12,14 +13,17 @@ const yoga = createYoga({
   schema: createSchema({
     typeDefs,
     resolvers: [
-  {
-    Query: {
-      health: () => "Support Ticket SLA Tracker API is running 🚀",
-    },
-  },
-  authResolver,
-],
+      {
+        Query: {
+          health: () =>
+            "Support Ticket SLA Tracker API is running 🚀",
+        },
+      },
+      authResolver,
+    ],
   }),
+
+  context: ({ request }) => createContext(request),
 });
 
 const server = createServer(yoga);
