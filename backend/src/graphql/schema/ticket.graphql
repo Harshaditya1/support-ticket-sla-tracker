@@ -32,6 +32,10 @@ input CreateTicketInput {
   description: String!
   priority: Priority!
 }
+input AssignTicketInput {
+  ticketId: ID!
+  assigneeId: ID!
+}
 
 input TicketFilterInput {
   status: TicketStatus
@@ -49,4 +53,5 @@ extend type Query {
 
 extend type Mutation {
   createTicket(input: CreateTicketInput!): Ticket!
+  assignTicket(input: AssignTicketInput!): Ticket!
 }
