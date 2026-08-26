@@ -1,5 +1,7 @@
 import {
   addDays,
+  addMinutes,
+  differenceInMinutes,
   setHours,
   setMinutes,
   setSeconds,
@@ -76,4 +78,50 @@ export function nextBusinessStart(
     // Return UTC because DB stores UTC timestamps
     return fromZonedTime(indiaDate, BUSINESS_TIMEZONE);
   }
+}
+export function addBusinessMinutes(
+  startTime: Date,
+  minutesToAdd: number,
+  holidays: Date[]
+): Date {
+  let current = nextBusinessStart(startTime, holidays);
+
+  let remainingMinutes = minutesToAdd;
+
+  while (remainingMinutes > 0) {
+    const indiaCurrent = toZonedTime(current, BUSINESS_TIMEZONE);
+
+    const businessEnd = setMilliseconds(
+      setSeconds(
+        setMinutes(
+          setHours(indiaCurrent, 18),
+          0
+        ),
+        0
+      ),
+      0
+    );
+
+    const availableToday = differenceInMinutes(
+      businessEnd,
+      indiaCurrent
+    );
+
+    if (remainingMinutes <= availableToday) {
+      const deadline = addMinutes(indiaCurrent, remainingMinutes);
+
+      return fromZonedTime(deadline, BUSINESS_TIMEZONE);
+    }
+
+    remainingMinutes -= availableToday;
+
+    const nextDay = addDays(indiaCurrent, 1);
+
+    current = nextBusinessStart(
+      fromZonedTime(nextDay, BUSINESS_TIMEZONE),
+      holidays
+    );
+  }
+
+  return current;
 }
