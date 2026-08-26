@@ -1,10 +1,34 @@
-function App() {
+import { Routes, Route, Navigate } from "react-router-dom";
+
+import LoginPage from "./pages/auth/LoginPage";
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import ReporterDashboard from "./pages/reporter/ReporterDashboard";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+
+export default function App() {
   return (
-    <div>
-      <h1>Support Ticket SLA Tracker</h1>
-      <p>Frontend connected successfully 🚀</p>
-    </div>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route
+        path="/agent"
+        element={
+          <ProtectedRoute role="AGENT">
+            <AgentDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/reporter"
+        element={
+          <ProtectedRoute role="REPORTER">
+            <ReporterDashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
-
-export default App;
