@@ -7,8 +7,8 @@ import {
   loginSchema,
   RegisterInput,
   LoginInput,
-} from "../../validation/authValidation";
-import { generateToken } from "../../utils/jwt";
+} from "../validation/authValidation";
+import { generateToken } from "../utils/jwt";
 
 const prisma = new PrismaClient();
 export async function registerUser(input: RegisterInput) {

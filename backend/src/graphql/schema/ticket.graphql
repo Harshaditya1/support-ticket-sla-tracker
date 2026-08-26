@@ -35,6 +35,35 @@ remainingMinutes: Int!
   firstResponseAt: String
   resolvedAt: String
 }
+type PriorityStats {
+  LOW: Int!
+  MEDIUM: Int!
+  HIGH: Int!
+  URGENT: Int!
+}
+
+type DashboardStats {
+  openTickets: Int!
+  inProgressTickets: Int!
+  resolvedTickets: Int!
+  breachedTickets: Int!
+  atRiskTickets: Int!
+  ticketsByPriority: PriorityStats!
+}
+type TicketEdge {
+  cursor: String!
+  node: Ticket!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+}
+
+type TicketConnection {
+  edges: [TicketEdge!]!
+  pageInfo: PageInfo!
+}
 
 input CreateTicketInput {
   title: String!
@@ -60,8 +89,13 @@ input TicketFilterInput {
 }
 
 extend type Query {
-  tickets(filter: TicketFilterInput): [Ticket!]!
+  tickets(
+  filter: TicketFilterInput
+  cursor: String
+  take: Int = 10
+): TicketConnection!
   ticket(id: ID!): Ticket
+  dashboardStats: DashboardStats!
 }
 
 extend type Mutation {

@@ -1,10 +1,81 @@
-import { PrismaClient, TicketStatus, Prisma } from "@prisma/client";
+import {
+  PrismaClient,
+  TicketStatus,
+  Prisma,
+  Priority,
+} from "@prisma/client";
+import { differenceInMinutes } from "date-fns";
+
 import {
   createTicketSchema,
   CreateTicketInput,
 } from "../../validation/ticketValidation";
 
+import {
+  calculateSlaDeadline,
+  getSlaState,
+} from "../sla/slaCalculator";
+
 const prisma = new PrismaClient();
+
+async function enrichTicketWithSla(ticket: any) {
+  const holidays = await prisma.holiday.findMany({
+    select: { date: true },
+  });
+
+  const holidayDates = holidays.map((h) => h.date);
+
+  const firstResponseDeadline = calculateSlaDeadline(
+    ticket.createdAt,
+    ticket.priority as Priority,
+    "FIRST_RESPONSE",
+    holidayDates
+  );
+
+  const resolutionDeadline = calculateSlaDeadline(
+    ticket.createdAt,
+    ticket.priority as Priority,
+    "RESOLUTION",
+    holidayDates
+  );
+
+  const deadline =
+    ticket.status === TicketStatus.RESOLVED ||
+    ticket.status === TicketStatus.CLOSED
+      ? resolutionDeadline
+      : firstResponseDeadline;
+
+  const totalMinutes =
+    ticket.status === TicketStatus.RESOLVED ||
+    ticket.status === TicketStatus.CLOSED
+      ? {
+          URGENT: 240,
+          HIGH: 1440,
+          MEDIUM: 2880,
+          LOW: 4320,
+        }[ticket.priority as Priority]
+      : {
+          URGENT: 60,
+          HIGH: 240,
+          MEDIUM: 480,
+          LOW: 1440,
+        }[ticket.priority as Priority];
+
+  const remainingMinutes = Math.max(
+    differenceInMinutes(deadline, new Date()),
+    0
+  );
+
+  return {
+    ...ticket,
+    firstResponseDeadline: firstResponseDeadline.toISOString(),
+    resolutionDeadline: resolutionDeadline.toISOString(),
+    slaState: getSlaState(deadline, totalMinutes, new Date()),
+    remainingMinutes,
+  };
+}
+
+// ---------------- CREATE TICKET ----------------
 
 export async function createTicket(
   input: CreateTicketInput,
@@ -12,7 +83,7 @@ export async function createTicket(
 ) {
   const data = createTicketSchema.parse(input);
 
-  const ticket = await prisma.ticket.create({
+  return prisma.ticket.create({
     data: {
       title: data.title,
       description: data.description,
@@ -21,48 +92,98 @@ export async function createTicket(
       reporterId,
     },
   });
-
-  return ticket;
 }
 
+// ---------------- GET TICKETS ----------------
 
 type TicketFilters = {
   status?: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
   priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   assigneeId?: string;
 };
+type TicketPaginationArgs = {
+  filter?: TicketFilters;
+  cursor?: string;
+  take?: number;
+};
 
-export async function getTickets(filter?: TicketFilters) {
+export async function getTickets({
+  filter,
+  cursor,
+  take = 10,
+}: TicketPaginationArgs) {
   const where: Prisma.TicketWhereInput = {};
 
-  if (filter?.status) {
-    where.status = filter.status;
-  }
+  if (filter?.status) where.status = filter.status;
+  if (filter?.priority) where.priority = filter.priority;
+  if (filter?.assigneeId) where.assigneeId = filter.assigneeId;
 
-  if (filter?.priority) {
-    where.priority = filter.priority;
-  }
-
-  if (filter?.assigneeId) {
-    where.assigneeId = filter.assigneeId;
-  }
-
-  return prisma.ticket.findMany({
+  const tickets = await prisma.ticket.findMany({
     where,
+    include: {
+      reporter: true,
+      assignee: true,
+    },
     orderBy: {
       createdAt: "desc",
     },
+    take: take + 1, // fetch one extra record
+    ...(cursor && {
+      cursor: { id: cursor },
+      skip: 1,
+    }),
   });
+
+  const hasNextPage = tickets.length > take;
+
+  const paginatedTickets = hasNextPage
+    ? tickets.slice(0, take)
+    : tickets;
+
+  const edges = await Promise.all(
+    paginatedTickets.map(async (ticket) => ({
+      cursor: ticket.id,
+      node: await enrichTicketWithSla(ticket),
+    }))
+  );
+
+  return {
+    edges,
+    pageInfo: {
+      endCursor:
+        edges.length > 0
+          ? edges[edges.length - 1].cursor
+          : null,
+      hasNextPage,
+    },
+  };
 }
+
+// ---------------- GET SINGLE TICKET ----------------
+
 export async function getTicketById(id: string) {
   const ticket = await prisma.ticket.findUnique({
-    where: {
-      id,
+    where: { id },
+    include: {
+      reporter: true,
+      assignee: true,
+      comments: {
+        orderBy: {
+          createdAt: "asc",
+        },
+      },
     },
   });
 
-  return ticket;
+  if (!ticket) {
+    return null;
+  }
+
+  return enrichTicketWithSla(ticket);
 }
+
+// ---------------- ASSIGN TICKET ----------------
+
 export async function assignTicket(
   ticketId: string,
   assigneeId: string
@@ -90,6 +211,9 @@ export async function assignTicket(
     },
   });
 }
+
+// ---------------- CHANGE STATUS ----------------
+
 export async function changeTicketStatus(
   ticketId: string,
   status: TicketStatus
@@ -109,9 +233,7 @@ export async function changeTicketStatus(
     CLOSED: [],
   };
 
-  const allowedStatuses = validTransitions[ticket.status];
-
-  if (!allowedStatuses.includes(status)) {
+  if (!validTransitions[ticket.status].includes(status)) {
     throw new Error("Invalid status transition");
   }
 

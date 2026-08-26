@@ -14,6 +14,7 @@ export async function createContext(
 ): Promise<Context> {
   const authHeader = request.headers.get("authorization");
 
+
   if (!authHeader?.startsWith("Bearer ")) {
     return { user: null };
   }
@@ -21,12 +22,9 @@ export async function createContext(
   const token = authHeader.replace("Bearer ", "");
 
   try {
-    return {
-      user: verifyToken(token),
-    };
-  } catch {
-    return {
-      user: null,
-    };
+    const user = verifyToken(token);
+    return { user };
+  } catch (error) {
+    return { user: null };
   }
 }

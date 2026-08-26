@@ -22,6 +22,8 @@ type TicketFilterArgs = {
     priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
     assigneeId?: string;
   };
+  cursor?: string;
+  take?: number;
 };
 
 type TicketArgs = {
@@ -44,20 +46,24 @@ type ChangeTicketStatusArgs = {
 export const ticketResolver = {
   Query: {
     tickets: async (
-      _: unknown,
-      args: TicketFilterArgs,
-      context: Context
-    ) => {
-      if (!context.user) {
-        throw new GraphQLError("Authentication required", {
-          extensions: {
-            code: "UNAUTHORIZED",
-          },
-        });
-      }
+  _: unknown,
+  args: TicketFilterArgs,
+  context: Context
+) => {
+  if (!context.user) {
+    throw new GraphQLError("Authentication required", {
+      extensions: {
+        code: "UNAUTHORIZED",
+      },
+    });
+  }
 
-      return getTickets(args.filter);
-    },
+  return getTickets({
+    filter: args.filter,
+    cursor: args.cursor,
+    take: args.take,
+  });
+},
 
     ticket: async (
       _: unknown,
