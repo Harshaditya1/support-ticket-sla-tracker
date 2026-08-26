@@ -3,19 +3,46 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import Badge from "../../components/common/Badge";
 
 import { GET_TICKETS } from "../../graphql/queries/ticket";
-import type { TicketsResponse } from "../../types/ticket";
-import { useState } from "react";
+import type { TicketsQueryVariables, TicketsResponse } from "../../types/ticket";
+import { useMemo, useState } from "react";
 import CreateTicketModal from "../../components/ticket/CreateTicketModal";
+
 
 export default function ReporterDashboard() {
      const [openModal, setOpenModal] = useState(false);
-  const { data, loading, error } = useQuery<TicketsResponse>(
-    GET_TICKETS,
-    {
-      variables: { take: 10 },
-    }
-  );
+     const [search, setSearch] = useState("");
 
+const [statusFilter, setStatusFilter] = useState<
+  "" | "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"
+>("");
+
+const [priorityFilter, setPriorityFilter] = useState<
+  "" | "LOW" | "MEDIUM" | "HIGH" | "URGENT"
+>("");
+  const { data, loading, error } = useQuery<
+  TicketsResponse,
+  TicketsQueryVariables
+>(GET_TICKETS, {
+  variables: {
+    take: 10,
+    filter: {
+      status: statusFilter || undefined,
+      priority: priorityFilter || undefined,
+    },
+  },
+});
+
+const tickets = useMemo(() => {
+  const list = data?.tickets.edges ?? [];
+
+  if (!search.trim()) return list;
+
+  return list.filter((ticket) =>
+    ticket.node.title
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+}, [data, search]);
   if (loading) {
     return (
       <DashboardLayout>
@@ -42,7 +69,6 @@ export default function ReporterDashboard() {
     );
   }
 
-  const tickets = data?.tickets.edges ?? [];
 
   const openCount = tickets.filter(
     (ticket) => ticket.node.status === "OPEN"
@@ -158,14 +184,16 @@ export default function ReporterDashboard() {
           <h2>Recent Tickets</h2>
 
           <input
-            placeholder="Search ticket..."
-            style={{
-              padding: "10px 14px",
-              border: "1px solid #CBD5E1",
-              borderRadius: "10px",
-              width: "240px",
-            }}
-          />
+  placeholder="Search ticket..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  style={{
+    padding: "10px 14px",
+    border: "1px solid #CBD5E1",
+    borderRadius: "10px",
+    width: "240px",
+  }}
+/>
         </div>
 
         {tickets.length === 0 ? (

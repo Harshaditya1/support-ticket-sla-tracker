@@ -23,7 +23,6 @@ export interface Ticket {
   resolutionDeadline: string;
   createdAt: string;
 }
-
 export interface TicketEdge {
   cursor: string;
   node: Ticket;
@@ -39,4 +38,16 @@ export interface TicketsResponse {
     edges: TicketEdge[];
     pageInfo: PageInfo;
   };
+}
+export interface TicketFilter {
+  status?: TicketStatus;
+  priority?: Priority;
+  assigneeId?: string;
+  slaState?: string;
+}
+
+export interface TicketsQueryVariables {
+  filter?: TicketFilter;
+  take?: number;
+  cursor?: string;
 }

@@ -1,8 +1,16 @@
 import { gql } from "@apollo/client";
 
 export const GET_TICKETS = gql`
-  query GetTickets($take: Int, $cursor: String) {
-    tickets(take: $take, cursor: $cursor) {
+  query GetTickets(
+    $filter: TicketFilterInput
+    $take: Int
+    $cursor: String
+  ) {
+    tickets(
+      filter: $filter
+      take: $take
+      cursor: $cursor
+    ) {
       edges {
         cursor
         node {
