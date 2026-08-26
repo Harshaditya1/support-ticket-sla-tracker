@@ -84,14 +84,26 @@ export async function createTicket(
   const data = createTicketSchema.parse(input);
 
   return prisma.ticket.create({
-    data: {
-      title: data.title,
-      description: data.description,
-      priority: data.priority,
-      status: TicketStatus.OPEN,
-      reporterId,
-    },
-  });
+  data: {
+    title: input.title,
+    description: input.description,
+
+    priority: input.priority ?? "MEDIUM",
+    status: "OPEN",
+
+    slaState: "ON_TRACK",
+
+    firstResponseDeadline: new Date(
+      Date.now() + 60 * 60 * 1000
+    ),
+
+    resolutionDeadline: new Date(
+      Date.now() + 24 * 60 * 60 * 1000
+    ),
+
+    reporterId,
+  },
+});
 }
 
 // ---------------- GET TICKETS ----------------
