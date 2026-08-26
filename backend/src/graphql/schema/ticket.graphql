@@ -11,6 +11,11 @@ enum TicketStatus {
   RESOLVED
   CLOSED
 }
+enum SlaState {
+  ON_TRACK
+  AT_RISK
+  BREACHED
+}
 
 type Ticket {
   id: ID!
@@ -18,6 +23,10 @@ type Ticket {
   description: String!
   priority: Priority!
   status: TicketStatus!
+  firstResponseDeadline: String!
+resolutionDeadline: String!
+slaState: SlaState!
+remainingMinutes: Int!
 
   reporterId: ID!
   assigneeId: ID
