@@ -1,5 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import Badge from "../../components/common/Badge";
+
 import { GET_TICKETS } from "../../graphql/queries/ticket";
 import type { TicketsResponse } from "../../types/ticket";
 
@@ -14,7 +16,9 @@ export default function ReporterDashboard() {
   if (loading) {
     return (
       <DashboardLayout>
-        <h2>Loading tickets...</h2>
+        <div style={{ padding: "40px" }}>
+          <h2>Loading tickets...</h2>
+        </div>
       </DashboardLayout>
     );
   }
@@ -22,8 +26,15 @@ export default function ReporterDashboard() {
   if (error) {
     return (
       <DashboardLayout>
-        <h2 style={{ color: "red" }}>Error loading tickets</h2>
-        <pre>{error.message}</pre>
+        <div style={{ padding: "40px" }}>
+          <h2 style={{ color: "#dc2626" }}>
+            Error loading tickets
+          </h2>
+
+          <pre style={{ whiteSpace: "pre-wrap" }}>
+            {error.message}
+          </pre>
+        </div>
       </DashboardLayout>
     );
   }
@@ -31,37 +42,74 @@ export default function ReporterDashboard() {
   const tickets = data?.tickets.edges ?? [];
 
   const openCount = tickets.filter(
-    (t) => t.node.status === "OPEN"
+    (ticket) => ticket.node.status === "OPEN"
   ).length;
 
   const progressCount = tickets.filter(
-    (t) => t.node.status === "IN_PROGRESS"
+    (ticket) => ticket.node.status === "IN_PROGRESS"
   ).length;
 
   const resolvedCount = tickets.filter(
-    (t) => t.node.status === "RESOLVED"
+    (ticket) => ticket.node.status === "RESOLVED"
   ).length;
 
   const breachedCount = tickets.filter(
-    (t) => t.node.slaState === "BREACHED"
+    (ticket) => ticket.node.slaState === "BREACHED"
   ).length;
 
   return (
     <DashboardLayout>
-      <div style={{ marginBottom: "30px" }}>
-        <h1 style={{ fontSize: "34px" }}>
-          Reporter Dashboard
-        </h1>
+      {/* Header */}
 
-        <p style={{ color: "#64748b" }}>
-          Welcome! Here's an overview of your support tickets.
-        </p>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "28px",
+          flexWrap: "wrap",
+          gap: "16px",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontSize: "34px",
+              marginBottom: "6px",
+            }}
+          >
+            Reporter Dashboard
+          </h1>
+
+          <p style={{ color: "#64748b" }}>
+            Manage and track your support tickets with SLA monitoring.
+          </p>
+        </div>
+
+        {/* Create Ticket Button (Next Milestone) */}
+
+        <button
+          style={{
+            background: "#2563eb",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: "14px",
+          }}
+        >
+          + Create Ticket
+        </button>
       </div>
 
       {/* KPI Cards */}
+
       <div className="stats-grid">
         <div className="stat-card">
           <h4>Open Tickets</h4>
+
           <h2 style={{ color: "#2563eb" }}>
             {openCount}
           </h2>
@@ -69,6 +117,7 @@ export default function ReporterDashboard() {
 
         <div className="stat-card">
           <h4>In Progress</h4>
+
           <h2 style={{ color: "#ea580c" }}>
             {progressCount}
           </h2>
@@ -76,6 +125,7 @@ export default function ReporterDashboard() {
 
         <div className="stat-card">
           <h4>Resolved</h4>
+
           <h2 style={{ color: "#16a34a" }}>
             {resolvedCount}
           </h2>
@@ -83,115 +133,155 @@ export default function ReporterDashboard() {
 
         <div className="stat-card">
           <h4>SLA Breached</h4>
+
           <h2 style={{ color: "#dc2626" }}>
             {breachedCount}
           </h2>
         </div>
       </div>
+            {/* Ticket Table */}
 
-      {/* Ticket Section */}
-      <div
-        style={{
-          background: "white",
-          padding: "24px",
-          borderRadius: "18px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
-        }}
-      >
-        <h2 style={{ marginBottom: "20px" }}>
-          Recent Tickets
-        </h2>
+      <div className="ticket-table-container">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
+          <h2>Recent Tickets</h2>
+
+          <input
+            placeholder="Search ticket..."
+            style={{
+              padding: "10px 14px",
+              border: "1px solid #CBD5E1",
+              borderRadius: "10px",
+              width: "240px",
+            }}
+          />
+        </div>
 
         {tickets.length === 0 ? (
-          <p>No tickets found.</p>
+          <div
+            style={{
+              padding: "40px",
+              textAlign: "center",
+              color: "#64748b",
+            }}
+          >
+            No tickets found.
+          </div>
         ) : (
-          tickets.map(({ node }) => (
-            <div
-              key={node.id}
-              style={{
-                borderBottom: "1px solid #e2e8f0",
-                padding: "18px 0",
-              }}
-            >
-              <h3>{node.title}</h3>
+          <table className="ticket-table">
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>SLA</th>
+                <th>Remaining</th>
+                <th>Created</th>
+              </tr>
+            </thead>
 
-              <p
-                style={{
-                  color: "#64748b",
-                  margin: "8px 0",
-                }}
-              >
-                {node.description}
-              </p>
+            <tbody>
+              {tickets.map(({ node }) => (
+                <tr key={node.id}>
+                  <td>
+                    <div className="ticket-title">
+                      {node.title}
+                    </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <span
-                  style={{
-                    background: "#dbeafe",
-                    color: "#1d4ed8",
-                    padding: "6px 12px",
-                    borderRadius: "20px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {node.priority}
-                </span>
+                    <div className="ticket-desc">
+                      {node.description}
+                    </div>
+                  </td>
 
-                <span
-                  style={{
-                    background: "#dcfce7",
-                    color: "#15803d",
-                    padding: "6px 12px",
-                    borderRadius: "20px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {node.status}
-                </span>
+                  <td>
+                    <Badge
+                      label={node.priority}
+                      type="priority"
+                    />
+                  </td>
 
-                <span
-                  style={{
-                    background:
-                      node.slaState === "BREACHED"
-                        ? "#fee2e2"
-                        : node.slaState === "AT_RISK"
-                        ? "#fef9c3"
-                        : "#dcfce7",
+                  <td>
+                    <Badge
+                      label={node.status}
+                      type="status"
+                    />
+                  </td>
 
-                    color:
-                      node.slaState === "BREACHED"
-                        ? "#b91c1c"
-                        : node.slaState === "AT_RISK"
-                        ? "#a16207"
-                        : "#15803d",
+                  <td>
+                    <Badge
+                      label={node.slaState}
+                      type="sla"
+                    />
+                  </td>
 
-                    padding: "6px 12px",
-                    borderRadius: "20px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {node.slaState}
-                </span>
-              </div>
+                  <td>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color:
+                          node.remainingMinutes <= 30
+                            ? "#dc2626"
+                            : "#2563eb",
+                      }}
+                    >
+                      {node.remainingMinutes} mins
+                    </span>
+                  </td>
 
-              <div
-                style={{
-                  marginTop: "12px",
-                  color: "#475569",
-                }}
-              >
-                Remaining SLA:{" "}
-                <strong>{node.remainingMinutes} mins</strong>
-              </div>
-            </div>
-          ))
+                  <td>
+                    {new Date(node.createdAt).toLocaleDateString(
+                      "en-IN",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )}
+
+                    <div
+                      style={{
+                        color: "#64748b",
+                        fontSize: "12px",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {new Date(node.createdAt).toLocaleTimeString(
+                        "en-IN",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
+      </div>
+
+      {/* Footer */}
+
+      <div
+        style={{
+          marginTop: "28px",
+          textAlign: "center",
+          color: "#64748b",
+          fontSize: "14px",
+        }}
+      >
+        Showing{" "}
+        <strong>{tickets.length}</strong>{" "}
+        tickets from GraphQL backend.
       </div>
     </DashboardLayout>
   );
