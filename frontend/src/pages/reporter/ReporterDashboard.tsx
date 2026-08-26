@@ -4,8 +4,11 @@ import Badge from "../../components/common/Badge";
 
 import { GET_TICKETS } from "../../graphql/queries/ticket";
 import type { TicketsResponse } from "../../types/ticket";
+import { useState } from "react";
+import CreateTicketModal from "../../components/ticket/CreateTicketModal";
 
 export default function ReporterDashboard() {
+     const [openModal, setOpenModal] = useState(false);
   const { data, loading, error } = useQuery<TicketsResponse>(
     GET_TICKETS,
     {
@@ -89,19 +92,19 @@ export default function ReporterDashboard() {
         {/* Create Ticket Button (Next Milestone) */}
 
         <button
-          style={{
-            background: "#2563eb",
-            color: "white",
-            border: "none",
-            borderRadius: "12px",
-            padding: "12px 20px",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: "14px",
-          }}
-        >
-          + Create Ticket
-        </button>
+  onClick={() => setOpenModal(true)}
+  style={{
+    background:"#2563EB",
+    color:"white",
+    border:"none",
+    borderRadius:"12px",
+    padding:"12px 20px",
+    cursor:"pointer",
+    fontWeight:600,
+  }}
+>
+  + Create Ticket
+</button>
       </div>
 
       {/* KPI Cards */}
@@ -283,6 +286,11 @@ export default function ReporterDashboard() {
         <strong>{tickets.length}</strong>{" "}
         tickets from GraphQL backend.
       </div>
+      {openModal && (
+  <CreateTicketModal
+    onClose={() => setOpenModal(false)}
+  />
+)}
     </DashboardLayout>
   );
 }
