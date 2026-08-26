@@ -1,6 +1,14 @@
-import { toZonedTime } from "date-fns-tz";
+import {
+  addDays,
+  setHours,
+  setMinutes,
+  setSeconds,
+  setMilliseconds,
+} from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
-const BUSINESS_TIMEZONE = process.env.BUSINESS_TIMEZONE || "Asia/Kolkata";
+const BUSINESS_TIMEZONE =
+  process.env.BUSINESS_TIMEZONE || "Asia/Kolkata";
 
 export function isBusinessDay(
   date: Date,
@@ -16,10 +24,7 @@ export function isBusinessDay(
   }
 
   const isHoliday = holidays.some((holiday) => {
-    const holidayDate = toZonedTime(
-      holiday,
-      BUSINESS_TIMEZONE
-    );
+    const holidayDate = toZonedTime(holiday, BUSINESS_TIMEZONE);
 
     return (
       holidayDate.getFullYear() === indiaDate.getFullYear() &&
@@ -29,4 +34,46 @@ export function isBusinessDay(
   });
 
   return !isHoliday;
+}
+
+export function nextBusinessStart(
+  date: Date,
+  holidays: Date[]
+): Date {
+  let indiaDate = toZonedTime(date, BUSINESS_TIMEZONE);
+
+  while (true) {
+    // Skip weekends and holidays
+    if (!isBusinessDay(fromZonedTime(indiaDate, BUSINESS_TIMEZONE), holidays)) {
+      indiaDate = addDays(indiaDate, 1);
+      indiaDate = setHours(indiaDate, 9);
+      indiaDate = setMinutes(indiaDate, 0);
+      indiaDate = setSeconds(indiaDate, 0);
+      indiaDate = setMilliseconds(indiaDate, 0);
+      continue;
+    }
+
+    const hour = indiaDate.getHours();
+
+    // Before business hours → same day 09:00
+    if (hour < 9) {
+      indiaDate = setHours(indiaDate, 9);
+      indiaDate = setMinutes(indiaDate, 0);
+      indiaDate = setSeconds(indiaDate, 0);
+      indiaDate = setMilliseconds(indiaDate, 0);
+    }
+
+    // After business hours → next business day 09:00
+    else if (hour >= 18) {
+      indiaDate = addDays(indiaDate, 1);
+      indiaDate = setHours(indiaDate, 9);
+      indiaDate = setMinutes(indiaDate, 0);
+      indiaDate = setSeconds(indiaDate, 0);
+      indiaDate = setMilliseconds(indiaDate, 0);
+      continue;
+    }
+
+    // Return UTC because DB stores UTC timestamps
+    return fromZonedTime(indiaDate, BUSINESS_TIMEZONE);
+  }
 }
