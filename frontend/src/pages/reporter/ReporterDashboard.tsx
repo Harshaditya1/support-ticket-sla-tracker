@@ -1,198 +1,198 @@
 import { useQuery } from "@apollo/client/react";
-import { useNavigate } from "react-router-dom";
-
+import DashboardLayout from "../../layouts/DashboardLayout";
 import { GET_TICKETS } from "../../graphql/queries/ticket";
-import { useAuth } from "../../hooks/useAuth";
 import type { TicketsResponse } from "../../types/ticket";
 
 export default function ReporterDashboard() {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-
   const { data, loading, error } = useQuery<TicketsResponse>(
     GET_TICKETS,
     {
-      variables: {
-        take: 10,
-      },
+      variables: { take: 10 },
     }
   );
 
   if (loading) {
     return (
-      <div style={{ padding: 30 }}>
+      <DashboardLayout>
         <h2>Loading tickets...</h2>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (error) {
     return (
-      <div style={{ padding: 30 }}>
+      <DashboardLayout>
         <h2 style={{ color: "red" }}>Error loading tickets</h2>
-
-        <pre
-          style={{
-            background: "#f3f4f6",
-            padding: "12px",
-            borderRadius: "8px",
-            marginTop: "16px",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {error.message}
-        </pre>
-      </div>
+        <pre>{error.message}</pre>
+      </DashboardLayout>
     );
   }
 
-  return (
-    <div style={{ padding: "30px", background: "#f8fafc", minHeight: "100vh" }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "30px",
-        }}
-      >
-        <div>
-          <h1 style={{ marginBottom: "5px" }}>Reporter Dashboard</h1>
-          <p style={{ color: "#64748b" }}>
-            Total Tickets: {data?.tickets.edges.length ?? 0}
-          </p>
-        </div>
+  const tickets = data?.tickets.edges ?? [];
 
-        <button
-          onClick={() => {
-            logout();
-            navigate("/login");
-          }}
-          style={{
-            padding: "10px 18px",
-            background: "#dc2626",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+  const openCount = tickets.filter(
+    (t) => t.node.status === "OPEN"
+  ).length;
+
+  const progressCount = tickets.filter(
+    (t) => t.node.status === "IN_PROGRESS"
+  ).length;
+
+  const resolvedCount = tickets.filter(
+    (t) => t.node.status === "RESOLVED"
+  ).length;
+
+  const breachedCount = tickets.filter(
+    (t) => t.node.slaState === "BREACHED"
+  ).length;
+
+  return (
+    <DashboardLayout>
+      <div style={{ marginBottom: "30px" }}>
+        <h1 style={{ fontSize: "34px" }}>
+          Reporter Dashboard
+        </h1>
+
+        <p style={{ color: "#64748b" }}>
+          Welcome! Here's an overview of your support tickets.
+        </p>
       </div>
 
-      {/* Ticket List */}
-      {data?.tickets.edges.length === 0 ? (
-        <div
-          style={{
-            background: "white",
-            padding: "30px",
-            borderRadius: "12px",
-            textAlign: "center",
-          }}
-        >
-          <h3>No Tickets Found</h3>
+      {/* KPI Cards */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h4>Open Tickets</h4>
+          <h2 style={{ color: "#2563eb" }}>
+            {openCount}
+          </h2>
         </div>
-      ) : (
-        data?.tickets.edges.map(({ node }) => (
-          <div
-            key={node.id}
-            style={{
-              background: "white",
-              borderRadius: "14px",
-              padding: "20px",
-              marginBottom: "18px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            }}
-          >
-            <h3 style={{ marginBottom: "10px" }}>{node.title}</h3>
 
-            <p style={{ color: "#475569", marginBottom: "14px" }}>
-              {node.description}
-            </p>
+        <div className="stat-card">
+          <h4>In Progress</h4>
+          <h2 style={{ color: "#ea580c" }}>
+            {progressCount}
+          </h2>
+        </div>
 
+        <div className="stat-card">
+          <h4>Resolved</h4>
+          <h2 style={{ color: "#16a34a" }}>
+            {resolvedCount}
+          </h2>
+        </div>
+
+        <div className="stat-card">
+          <h4>SLA Breached</h4>
+          <h2 style={{ color: "#dc2626" }}>
+            {breachedCount}
+          </h2>
+        </div>
+      </div>
+
+      {/* Ticket Section */}
+      <div
+        style={{
+          background: "white",
+          padding: "24px",
+          borderRadius: "18px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+        }}
+      >
+        <h2 style={{ marginBottom: "20px" }}>
+          Recent Tickets
+        </h2>
+
+        {tickets.length === 0 ? (
+          <p>No tickets found.</p>
+        ) : (
+          tickets.map(({ node }) => (
             <div
+              key={node.id}
               style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                marginBottom: "14px",
+                borderBottom: "1px solid #e2e8f0",
+                padding: "18px 0",
               }}
             >
-              <span
-                style={{
-                  background: "#dbeafe",
-                  color: "#1d4ed8",
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                }}
-              >
-                {node.priority}
-              </span>
+              <h3>{node.title}</h3>
 
-              <span
+              <p
                 style={{
-                  background: "#dcfce7",
-                  color: "#15803d",
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  fontSize: "13px",
-                  fontWeight: "600",
+                  color: "#64748b",
+                  margin: "8px 0",
                 }}
               >
-                {node.status}
-              </span>
+                {node.description}
+              </p>
 
-              <span
+              <div
                 style={{
-                  background:
-                    node.slaState === "BREACHED"
-                      ? "#fee2e2"
-                      : node.slaState === "AT_RISK"
-                      ? "#fef9c3"
-                      : "#dcfce7",
-                  color:
-                    node.slaState === "BREACHED"
-                      ? "#b91c1c"
-                      : node.slaState === "AT_RISK"
-                      ? "#a16207"
-                      : "#15803d",
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  fontSize: "13px",
-                  fontWeight: "600",
+                  display: "flex",
+                  gap: "12px",
+                  flexWrap: "wrap",
                 }}
               >
-                SLA: {node.slaState}
-              </span>
+                <span
+                  style={{
+                    background: "#dbeafe",
+                    color: "#1d4ed8",
+                    padding: "6px 12px",
+                    borderRadius: "20px",
+                    fontWeight: 600,
+                  }}
+                >
+                  {node.priority}
+                </span>
+
+                <span
+                  style={{
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    padding: "6px 12px",
+                    borderRadius: "20px",
+                    fontWeight: 600,
+                  }}
+                >
+                  {node.status}
+                </span>
+
+                <span
+                  style={{
+                    background:
+                      node.slaState === "BREACHED"
+                        ? "#fee2e2"
+                        : node.slaState === "AT_RISK"
+                        ? "#fef9c3"
+                        : "#dcfce7",
+
+                    color:
+                      node.slaState === "BREACHED"
+                        ? "#b91c1c"
+                        : node.slaState === "AT_RISK"
+                        ? "#a16207"
+                        : "#15803d",
+
+                    padding: "6px 12px",
+                    borderRadius: "20px",
+                    fontWeight: 600,
+                  }}
+                >
+                  {node.slaState}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "12px",
+                  color: "#475569",
+                }}
+              >
+                Remaining SLA:{" "}
+                <strong>{node.remainingMinutes} mins</strong>
+              </div>
             </div>
-
-            <hr style={{ border: "1px solid #e2e8f0", margin: "16px 0" }} />
-
-            <p>
-              <strong>Remaining Minutes:</strong> {node.remainingMinutes}
-            </p>
-
-            <p>
-              <strong>First Response Deadline:</strong>{" "}
-              {new Date(node.firstResponseDeadline).toLocaleString()}
-            </p>
-
-            <p>
-              <strong>Resolution Deadline:</strong>{" "}
-              {new Date(node.resolutionDeadline).toLocaleString()}
-            </p>
-
-            <p>
-              <strong>Created At:</strong>{" "}
-              {new Date(node.createdAt).toLocaleString()}
-            </p>
-          </div>
-        ))
-      )}
-    </div>
+          ))
+        )}
+      </div>
+    </DashboardLayout>
   );
 }
