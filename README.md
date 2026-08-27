@@ -158,6 +158,14 @@ SLA health is calculated as:
 
 ---
 
+## 🎥 Demo Video
+
+Click the thumbnail below to watch the complete project walkthrough on Google Drive.
+
+[![Watch Demo Video](./screenshots/reporter-dashboard.png)](https://drive.google.com/file/d/1Cd5kvS5Y34qv2Sbk9gr1QLIT0j-T_KAU/view?usp=sharing)
+
+**Direct Link:** https://drive.google.com/file/d/1Cd5kvS5Y34qv2Sbk9gr1QLIT0j-T_KAU/view?usp=sharing
+
 ## Project Structure
 
 ```text
