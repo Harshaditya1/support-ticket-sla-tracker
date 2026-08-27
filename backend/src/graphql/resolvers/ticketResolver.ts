@@ -189,10 +189,12 @@ export const ticketResolver = {
   }
 
   try {
-    return await changeTicketStatus(
-      args.input.ticketId,
-      args.input.status
-    );
+  const ticket = await changeTicketStatus(
+    args.input.ticketId,
+    args.input.status
+  );
+
+  return ticket;
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "Ticket not found") {
@@ -216,4 +218,30 @@ export const ticketResolver = {
   }
 },
   },
+  Ticket: {
+  // Compute remaining SLA minutes
+  remainingMinutes: (ticket: any) => {
+    if (!ticket.resolutionDeadline) return 0;
+
+    const diff =
+      new Date(ticket.resolutionDeadline).getTime() - Date.now();
+
+    return Math.max(Math.floor(diff / 60000), 0);
+  },
+
+  // Always return a valid SLA state
+  slaState: (ticket: any) => {
+    if (ticket.slaState) return ticket.slaState;
+
+    if (!ticket.resolutionDeadline) return "ON_TRACK";
+
+    const diff =
+      new Date(ticket.resolutionDeadline).getTime() - Date.now();
+
+    if (diff <= 0) return "BREACHED";
+    if (diff <= 30 * 60 * 1000) return "AT_RISK";
+
+    return "ON_TRACK";
+  },
+},
 };

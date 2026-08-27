@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum Role {
   REPORTER
   AGENT
@@ -25,13 +26,19 @@ enum TicketStatus {
   CLOSED
 }
 
+enum SlaState {
+  ON_TRACK
+  AT_RISK
+  BREACHED
+}
+
 model User {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   name         String
-  email        String    @unique
+  email        String   @unique
   passwordHash String
   role         Role
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime @default(now())
 
   reportedTickets Ticket[] @relation("ReporterTickets")
   assignedTickets Ticket[] @relation("AssigneeTickets")
@@ -39,18 +46,23 @@ model User {
 }
 
 model Ticket {
-  id              String       @id @default(cuid())
-  title           String
-  description     String
-  priority        Priority
-  status          TicketStatus @default(OPEN)
+  id          String   @id @default(cuid())
+  title       String
+  description String
 
-  reporterId      String
-  assigneeId      String?
+  priority Priority
+  status   TicketStatus @default(OPEN)
+  slaState SlaState     @default(ON_TRACK)
 
-  createdAt       DateTime @default(now())
-  firstResponseAt DateTime?
-  resolvedAt      DateTime?
+  reporterId String
+  assigneeId String?
+
+  createdAt DateTime @default(now())
+
+  firstResponseAt       DateTime?
+  resolvedAt            DateTime?
+  firstResponseDeadline DateTime?
+  resolutionDeadline    DateTime?
 
   reporter User @relation("ReporterTickets", fields: [reporterId], references: [id])
   assignee User? @relation("AssigneeTickets", fields: [assigneeId], references: [id])
@@ -71,7 +83,7 @@ model Comment {
   createdAt DateTime @default(now())
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  author User   @relation(fields: [authorId], references: [id])
+  author User @relation(fields: [authorId], references: [id])
 }
 
 model Holiday {

@@ -1,8 +1,8 @@
 type Comment {
   id: ID!
-  ticketId: ID!
-  authorId: ID!
   content: String!
+  authorId: ID!
+  ticketId: ID!
   createdAt: String!
 }
 
@@ -11,8 +11,8 @@ input AddCommentInput {
   content: String!
 }
 
-extend type Ticket {
-  comments: [Comment!]!
+extend type Query {
+  comments(ticketId: ID!): [Comment!]!
 }
 
 extend type Mutation {

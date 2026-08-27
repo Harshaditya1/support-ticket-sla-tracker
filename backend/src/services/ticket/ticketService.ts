@@ -67,12 +67,19 @@ async function enrichTicketWithSla(ticket: any) {
   );
 
   return {
-    ...ticket,
-    firstResponseDeadline: firstResponseDeadline.toISOString(),
-    resolutionDeadline: resolutionDeadline.toISOString(),
-    slaState: getSlaState(deadline, totalMinutes, new Date()),
-    remainingMinutes,
-  };
+  ...ticket,
+
+  // Dates ko string me convert karke frontend bhejo
+  createdAt: ticket.createdAt.toISOString(),
+  firstResponseAt: ticket.firstResponseAt?.toISOString() ?? null,
+  resolvedAt: ticket.resolvedAt?.toISOString() ?? null,
+
+  firstResponseDeadline: firstResponseDeadline.toISOString(),
+  resolutionDeadline: resolutionDeadline.toISOString(),
+
+  slaState: getSlaState(deadline, totalMinutes, new Date()),
+  remainingMinutes,
+};
 }
 
 // ---------------- CREATE TICKET ----------------
@@ -82,27 +89,28 @@ export async function createTicket(
   reporterId: string
 ) {
   const data = createTicketSchema.parse(input);
+  const firstResponseDeadline = new Date(
+  Date.now() + 60 * 60 * 1000 // 1 hour
+);
+
+const resolutionDeadline = new Date(
+  Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+);
 
   return prisma.ticket.create({
   data: {
-    title: input.title,
-    description: input.description,
+  title: input.title,
+  description: input.description,
+  priority: input.priority ?? Priority.LOW,
 
-    priority: input.priority ?? "MEDIUM",
-    status: "OPEN",
+  reporterId,
 
-    slaState: "ON_TRACK",
+  status: TicketStatus.OPEN,
+  slaState: "ON_TRACK",
 
-    firstResponseDeadline: new Date(
-      Date.now() + 60 * 60 * 1000
-    ),
-
-    resolutionDeadline: new Date(
-      Date.now() + 24 * 60 * 60 * 1000
-    ),
-
-    reporterId,
-  },
+  firstResponseDeadline,
+  resolutionDeadline,
+},
 });
 }
 
@@ -249,10 +257,19 @@ export async function changeTicketStatus(
     throw new Error("Invalid status transition");
   }
 
-  return prisma.ticket.update({
+  const updatedTicket = await prisma.ticket.update({
     where: { id: ticketId },
     data: {
       status,
+
+      // Resolve time save karo
+      resolvedAt:
+        status === TicketStatus.RESOLVED
+          ? new Date()
+          : ticket.resolvedAt,
     },
   });
+
+  // SLA ko deadline ke basis par dobara calculate karke return karo
+  return enrichTicketWithSla(updatedTicket);
 }

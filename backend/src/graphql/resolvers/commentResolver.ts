@@ -1,6 +1,15 @@
 import { GraphQLError } from "graphql";
+
 import { Context } from "../../context";
-import { addComment } from "../../services/commentService";
+
+import {
+  getComments,
+  addComment,
+} from "../../services/comment/commentService";
+
+type CommentsArgs = {
+  ticketId: string;
+};
 
 type AddCommentArgs = {
   input: {
@@ -10,6 +19,24 @@ type AddCommentArgs = {
 };
 
 export const commentResolver = {
+  Query: {
+    comments: async (
+      _: unknown,
+      args: CommentsArgs,
+      context: Context
+    ) => {
+      if (!context.user) {
+        throw new GraphQLError("Authentication required", {
+          extensions: {
+            code: "UNAUTHORIZED",
+          },
+        });
+      }
+
+      return getComments(args.ticketId);
+    },
+  },
+
   Mutation: {
     addComment: async (
       _: unknown,
@@ -25,20 +52,20 @@ export const commentResolver = {
       }
 
       try {
-        return await addComment(
-          args.input,
-          context.user.userId
+        return addComment(
+          args.input.ticketId,
+          context.user.userId,
+          args.input.content
         );
       } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message === "Ticket not found"
-        ) {
-          throw new GraphQLError(error.message, {
-            extensions: {
-              code: "TICKET_NOT_FOUND",
-            },
-          });
+        if (error instanceof Error) {
+          if (error.message === "Ticket not found") {
+            throw new GraphQLError(error.message, {
+              extensions: {
+                code: "TICKET_NOT_FOUND",
+              },
+            });
+          }
         }
 
         throw error;
