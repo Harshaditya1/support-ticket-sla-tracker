@@ -5,8 +5,6 @@ export const ADD_COMMENT = gql`
     addComment(input: $input) {
       id
       content
-      authorId
-      ticketId
       createdAt
     }
   }

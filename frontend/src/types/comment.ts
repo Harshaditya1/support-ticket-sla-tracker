@@ -1,9 +1,13 @@
 export interface Comment {
   id: string;
   content: string;
-  authorId: string;
-  ticketId: string;
   createdAt: string;
+
+  author: {
+    id: string;
+    name: string;
+    role: "AGENT" | "REPORTER";
+  };
 }
 
 export interface CommentsResponse {

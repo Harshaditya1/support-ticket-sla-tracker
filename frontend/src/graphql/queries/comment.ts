@@ -5,8 +5,8 @@ export const GET_COMMENTS = gql`
     comments(ticketId: $ticketId) {
       id
       content
-      authorId
       ticketId
+      authorId
       createdAt
     }
   }

@@ -10,6 +10,9 @@ export async function getComments(ticketId: string) {
     orderBy: {
       createdAt: "asc",
     },
+    include: {
+      author: true, // ✅ author + createdAt dono response me
+    },
   });
 }
 
@@ -33,6 +36,9 @@ export async function addComment(
       ticketId,
       authorId,
       content,
+    },
+    include: {
+      author: true, // ✅ newly added comment me bhi author aur createdAt milega
     },
   });
 }

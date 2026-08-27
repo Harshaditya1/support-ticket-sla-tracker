@@ -3,9 +3,7 @@ import {
   useContext,
   useMemo,
   useState,
-  useEffect,
 } from "react";
-
 import { jwtDecode } from "jwt-decode";
 
 import type { User } from "../types/auth";
@@ -30,33 +28,32 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  // Restore user from JWT when app loads
-  useEffect(() => {
+  // Refresh ke time localStorage/JWT se user restore hoga
+  const [user, setUser] = useState<User | null>(() => {
     const token = getToken();
 
-    if (!token) return;
+    if (!token) return null;
 
     try {
       const payload = jwtDecode<JwtPayload>(token);
 
-      // Check token expiry
+      // Token expire ho gaya ho to logout
       if (payload.exp * 1000 < Date.now()) {
         removeToken();
-        return;
+        return null;
       }
 
-      setUser({
+      return {
         id: payload.userId,
         role: payload.role,
         name: "",
         email: "",
-      });
+      };
     } catch {
       removeToken();
+      return null;
     }
-  }, []);
+  });
 
   function login(user: User) {
     setUser(user);

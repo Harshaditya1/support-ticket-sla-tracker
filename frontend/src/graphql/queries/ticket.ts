@@ -1,5 +1,7 @@
 import { gql } from "@apollo/client";
 
+/* ---------------- GET ALL TICKETS ---------------- */
+
 export const GET_TICKETS = gql`
   query GetTickets(
     $filter: TicketFilterInput
@@ -34,6 +36,8 @@ export const GET_TICKETS = gql`
   }
 `;
 
+/* ---------------- GET SINGLE TICKET ---------------- */
+
 export const GET_TICKET = gql`
   query GetTicket($id: ID!) {
     ticket(id: $id) {
@@ -44,6 +48,7 @@ export const GET_TICKET = gql`
       status
       slaState
       remainingMinutes
+
       reporterId
       assigneeId
 

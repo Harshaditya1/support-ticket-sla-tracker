@@ -362,7 +362,15 @@ body {
   background:white;
   border-radius:18px;
   padding:20px;
-  box-shadow:0 6px 20px rgba(0,0,0,.06);
+  box-shadow:0 6px 20px rgba(0,0,0,.05);
+
+  cursor:pointer;
+  transition:all .25s ease;
+}
+
+.stat-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 28px rgba(37,99,235,.15);
 }
 
 .stat-card h4{
@@ -569,4 +577,49 @@ body {
   padding:10px 18px;
   border-radius:10px;
   cursor:pointer;
+}
+/* FILTER BAR */
+
+.filter-select{
+  padding:10px 12px;
+  border:1px solid #CBD5E1;
+  border-radius:10px;
+  background:white;
+  min-width:140px;
+  cursor:pointer;
+}
+
+.clear-filter-btn{
+  background:#F1F5F9;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.clear-filter-btn:hover{
+  background:#E2E8F0;
+}
+.search-input,
+.filter-select {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  color: #1E293B;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input {
+  width: 240px;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }

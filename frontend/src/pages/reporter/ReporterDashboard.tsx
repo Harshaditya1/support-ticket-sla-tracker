@@ -235,25 +235,22 @@ export default function ReporterDashboard() {
     <div className="stat-card">
             <h4 style={{ color: "#16A34A" }}>ON TRACK</h4>
             <h2 style={{ color: "#16A34A" }}>
-              {(stats?.openTickets ?? 0) +
-                (stats?.inProgressTickets ?? 0) -
-                (stats?.atRiskTickets ?? 0) -
-                (stats?.breachedTickets ?? 0)}
-            </h2>
+  {tickets.filter((t) => t.node.slaState === "ON_TRACK").length}
+</h2>
           </div>
 
           <div className="stat-card">
             <h4 style={{ color: "#CA8A04" }}>AT RISK</h4>
             <h2 style={{ color: "#CA8A04" }}>
-              {stats?.atRiskTickets ?? 0}
-            </h2>
+  {tickets.filter((t) => t.node.slaState === "AT_RISK").length}
+</h2>
           </div>
 
           <div className="stat-card">
             <h4 style={{ color: "#DC2626" }}>BREACHED</h4>
             <h2 style={{ color: "#DC2626" }}>
-              {stats?.breachedTickets ?? 0}
-            </h2>
+  {tickets.filter((t) => t.node.slaState === "BREACHED").length}
+</h2>
           </div>
         </div>
       </div>

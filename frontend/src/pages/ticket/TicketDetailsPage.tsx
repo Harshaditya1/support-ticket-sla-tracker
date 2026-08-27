@@ -48,12 +48,7 @@ export default function TicketDetailsPage() {
   return (
     <DashboardLayout>
       {/* Header */}
-
-      <div
-        style={{
-          marginBottom: "28px",
-        }}
-      >
+      <div style={{ marginBottom: "28px" }}>
         <h1
           style={{
             fontSize: "34px",
@@ -70,7 +65,6 @@ export default function TicketDetailsPage() {
       </div>
 
       {/* Ticket Card */}
-
       <div
         style={{
           background: "white",
@@ -89,12 +83,7 @@ export default function TicketDetailsPage() {
           }}
         >
           <div>
-            <h2
-              style={{
-                margin: 0,
-                color: "#1E293B",
-              }}
-            >
+            <h2 style={{ margin: 0, color: "#1E293B" }}>
               {ticket.title}
             </h2>
 
@@ -122,8 +111,8 @@ export default function TicketDetailsPage() {
             borderTop: "1px solid #E2E8F0",
           }}
         />
-                {/* Status Section */}
 
+        {/* Status Section */}
         <div
           style={{
             display: "grid",
@@ -135,7 +124,6 @@ export default function TicketDetailsPage() {
         >
           <div className="stat-card">
             <h4>Status</h4>
-
             <Badge
               label={ticket.status}
               type="status"
@@ -144,7 +132,6 @@ export default function TicketDetailsPage() {
 
           <div className="stat-card">
             <h4>SLA State</h4>
-
             <Badge
               label={ticket.slaState}
               type="sla"
@@ -157,29 +144,63 @@ export default function TicketDetailsPage() {
             <h2
               style={{
                 color:
-                  ticket.remainingMinutes <= 30
+                  ticket.slaState === "BREACHED"
                     ? "#DC2626"
-                    : "#2563EB",
+                    : ticket.slaState === "AT_RISK"
+                    ? "#CA8A04"
+                    : "#16A34A",
               }}
             >
-              {ticket.remainingMinutes} mins
+              {(() => {
+                const days = Math.floor(
+                  ticket.remainingMinutes / 1440
+                );
+                const hours = Math.floor(
+                  (ticket.remainingMinutes % 1440) / 60
+                );
+                const minutes =
+                  ticket.remainingMinutes % 60;
+
+                if (ticket.slaState === "BREACHED")
+                  return "SLA Breached";
+
+                if (days > 0)
+                  return `${days}d ${hours}h`;
+
+                if (hours > 0)
+                  return `${hours}h ${minutes}m`;
+
+                return `${minutes}m`;
+              })()}
             </h2>
           </div>
 
           <div className="stat-card">
             <h4>Created</h4>
 
-            <p>
-              {new Date(
-                ticket.createdAt
-              ).toLocaleString("en-IN")}
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#64748B",
+              }}
+            >
+              {ticket.createdAt
+                ? new Date(
+                    ticket.createdAt
+                  ).toLocaleString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "--"}
             </p>
           </div>
         </div>
 
         {/* SLA Timeline */}
-
-        <h3
+                <h3
           style={{
             marginBottom: "18px",
             color: "#1E293B",
@@ -202,9 +223,7 @@ export default function TicketDetailsPage() {
               background: "#EFF6FF",
             }}
           >
-            <strong>
-              First Response Deadline
-            </strong>
+            <strong>First Response Deadline</strong>
 
             <p style={{ marginTop: "6px" }}>
               {ticket.firstResponseDeadline
@@ -253,7 +272,6 @@ export default function TicketDetailsPage() {
         </div>
 
         {/* IDs */}
-
         <div
           style={{
             marginTop: "30px",
@@ -272,6 +290,8 @@ export default function TicketDetailsPage() {
           </p>
         </div>
       </div>
+
+      {/* Comments */}
       <CommentSection ticketId={ticket.id} />
     </DashboardLayout>
   );

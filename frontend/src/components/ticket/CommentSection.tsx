@@ -113,19 +113,24 @@ export default function CommentSection({
                 }}
               >
                 <strong style={{ color: "#1E293B" }}>
-                  User
-                </strong>
-
-                <span
-                  style={{
-                    color: "#64748B",
-                    fontSize: "13px",
-                  }}
-                >
-                  {new Date(
-                    item.createdAt
-                  ).toLocaleString("en-IN")}
-                </span>
+  User
+</strong>
+<span
+  style={{
+    color: "#64748B",
+    fontSize: "13px",
+  }}
+>
+  {item.createdAt
+    ? new Date(Number(item.createdAt)).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "Just now"}
+</span>
               </div>
 
               <p

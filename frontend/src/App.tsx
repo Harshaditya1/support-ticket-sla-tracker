@@ -4,6 +4,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import ReporterDashboard from "./pages/reporter/ReporterDashboard";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import TicketDetailsPage from "./pages/ticket/TicketDetailsPage";
 
 export default function App() {
   return (
@@ -29,6 +30,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+  path="/ticket/:id"
+  element={
+    <ProtectedRoute>
+      <TicketDetailsPage />
+    </ProtectedRoute>
+  }
+/>
     </Routes>
   );
 }
