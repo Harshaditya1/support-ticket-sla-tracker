@@ -340,3 +340,4 @@ Additional enums:
 ## Author
 
 **Support Ticket SLA Tracker** — A full-stack GraphQL application demonstrating role-based authentication, SLA business logic, Prisma ORM, PostgreSQL, and Apollo Client.
+_Last updated for assignment submission._
