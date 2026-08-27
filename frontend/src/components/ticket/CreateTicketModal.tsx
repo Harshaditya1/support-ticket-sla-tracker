@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
-
 import { CREATE_TICKET } from "../../graphql/mutations/ticket";
 import { GET_TICKETS } from "../../graphql/queries/ticket";
 

@@ -14,3 +14,15 @@ export const CREATE_TICKET = gql`
     }
   }
 `;
+
+export const CHANGE_TICKET_STATUS = gql`
+  mutation ChangeTicketStatus($input: ChangeTicketStatusInput!) {
+    changeTicketStatus(input: $input) {
+      id
+      status
+      slaState
+      remainingMinutes
+      resolvedAt
+    }
+  }
+`;

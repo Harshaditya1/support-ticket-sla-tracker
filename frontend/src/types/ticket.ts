@@ -15,13 +15,25 @@ export interface Ticket {
   id: string;
   title: string;
   description: string;
+
   priority: Priority;
   status: TicketStatus;
   slaState: SlaState;
+
   remainingMinutes: number;
-  firstResponseDeadline: string;
-  resolutionDeadline: string;
+
+  reporterId: string;
+  assigneeId?: string | null;
+
   createdAt: string;
+  firstResponseAt?: string | null;
+  resolvedAt?: string | null;
+
+  firstResponseDeadline?: string | null;
+  resolutionDeadline?: string | null;
+}
+export interface TicketResponse {
+  ticket: Ticket;
 }
 export interface TicketEdge {
   cursor: string;

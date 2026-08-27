@@ -33,3 +33,26 @@ export const GET_TICKETS = gql`
     }
   }
 `;
+
+export const GET_TICKET = gql`
+  query GetTicket($id: ID!) {
+    ticket(id: $id) {
+      id
+      title
+      description
+      priority
+      status
+      slaState
+      remainingMinutes
+      reporterId
+      assigneeId
+
+      createdAt
+      firstResponseAt
+      resolvedAt
+
+      firstResponseDeadline
+      resolutionDeadline
+    }
+  }
+`;
