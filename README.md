@@ -1,3 +1,10 @@
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![GraphQL](https://img.shields.io/badge/GraphQL-Yoga-E10098?logo=graphql)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql)
+![Bun](https://img.shields.io/badge/Bun-Runtime-black?logo=bun)
+
 # Support Ticket SLA Tracker
 
 A production-style **full-stack ticket management platform** built with **React, GraphQL Yoga, Prisma, PostgreSQL, Apollo Client, and Bun**. The application enables support teams to manage tickets through a role-based workflow while automatically tracking **Service Level Agreement (SLA)** deadlines and ticket health.
